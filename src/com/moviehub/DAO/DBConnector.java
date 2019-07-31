@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.moviehub.model.Account;
+import com.moviehub.model.Comment;
 import com.moviehub.model.Film;
 import com.moviehub.model.FilmSaved;
 import com.moviehub.model.FilmWatched;
@@ -40,6 +41,10 @@ public class DBConnector {
         }
     }
     
+    //*****************************************************************
+    //Account DAO
+    //*****************************************************************
+    
     //get data from table Account
     public ArrayList<Account> getDataAccount(){
         ArrayList<Account> ds = new ArrayList<>();
@@ -51,6 +56,7 @@ public class DBConnector {
             while(rs.next()){
                 ds.add(new Account(rs.getString(1).trim(),rs.getString(2).trim(),rs.getInt(3)));
             }
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -59,6 +65,9 @@ public class DBConnector {
         return ds;
     }
     
+    //*****************************************************************
+    //Profile DAO
+    //*****************************************************************
     
     //get data from table USER_PROFILE
     public ArrayList<Profile> getDataProfile(){
@@ -86,6 +95,7 @@ public class DBConnector {
             	System.out.println("Profile: "+profile.toString());
                 ds.add(profile);
             }
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -107,6 +117,9 @@ public class DBConnector {
         
         isSuccess = stm.executeUpdate(insertAccount);
         stm.executeUpdate(insertProfile);
+        
+        stm.close();
+        CloseConnect();
        
         return isSuccess>0 ? true : false;
     }
@@ -124,11 +137,17 @@ public class DBConnector {
         		+ "where username_ = '"+profile.getUsername()+"'";
        
         stm = (Statement) cnn.createStatement();
-        
         isSuccess = stm.executeUpdate(updateProfile);
+        
+        stm.close();
+        CloseConnect();
     	
         return isSuccess>0 ? true : false;
 	}
+    
+    //*****************************************************************
+    //FILM DAO
+    //*****************************************************************
     
     //get all film from db
     public ArrayList<Film> getDataFilm(){
@@ -142,6 +161,7 @@ public class DBConnector {
             while(rs.next()){
                 ds.add(new Film(rs.getString(1).trim(),rs.getString(2).trim(),rs.getString(3).trim(), rs.getString(4).trim(), rs.getString(5).trim(), rs.getString(6).trim(), rs.getString(7).trim(), rs.getString(8).trim(), rs.getString(9).trim()));
             }
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -162,6 +182,7 @@ public class DBConnector {
             while(rs.next()){
                 ds.add(new Film(rs.getString(1).trim(),rs.getString(2).trim(),rs.getString(3).trim(), rs.getString(4).trim(), rs.getString(5).trim(), rs.getString(6).trim(), rs.getString(7).trim(), rs.getString(8).trim(), rs.getString(9).trim()));
             }
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -182,6 +203,7 @@ public class DBConnector {
             while(rs.next()){
                 ds.add(new FilmWatched(rs.getString(1).trim(),rs.getInt(2),rs.getString(3).trim()));
             }
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -207,6 +229,7 @@ public class DBConnector {
             for(FilmSaved filmSaved : ds)
             	films.add(this.getDataFilmById(filmSaved.getIdFilm()));
             
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -225,6 +248,7 @@ public class DBConnector {
             rs = stm.executeQuery(query);
             rs.next();
             film = new Film(rs.getString(1).trim(),rs.getString(2).trim(),rs.getString(3).trim(), rs.getString(4).trim(), rs.getString(5).trim(), rs.getString(6).trim(), rs.getString(7).trim(), rs.getString(8).trim(), rs.getString(9).trim());
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -243,7 +267,7 @@ public class DBConnector {
             rs = stm.executeQuery(query);
             if(rs.next())
             	progress = rs.getInt(2);
-            
+            rs.close();
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -260,9 +284,7 @@ public class DBConnector {
         try {        
             stm = cnn.createStatement();
             String update = "update FILM set film_views = '"+views+"' where id_film = '"+id+"'";
-            
             isUpdated = stm.executeUpdate(update);
-            
             stm.close();
             CloseConnect();
         } catch (SQLException ex) {
@@ -295,7 +317,7 @@ public class DBConnector {
 	        try {
 	        	stm = cnn.createStatement();
 				isUpdated = stm.executeUpdate(update);
-				stm.close();
+	            stm.close();
 			} catch (SQLException ex) {
 				System.out.println("Error: " + ex.toString());
 			}
@@ -308,7 +330,8 @@ public class DBConnector {
 	        try {
 	        	stm = cnn.createStatement();
 				isUpdated = stm.executeUpdate(insertFilmWatched);
-				stm.close();
+	            stm.close();
+				
 			} catch (SQLException ex) {
 				System.out.println("Error: " + ex.toString());
 			}
@@ -344,20 +367,23 @@ public class DBConnector {
 	        try {
 	        	stm = cnn.createStatement();
 				isUpdated = stm.executeUpdate(removeQuery);
-				stm.close();
+				
+	            stm.close();
 			} catch (SQLException ex) {
 				System.out.println("Error: " + ex.toString());
 			}
+	        
 	        CloseConnect();
 	        
-            return isUpdated > 0 ? true : false;
+            return isUpdated > 0 ? false : true;
     	}
     	else {
     		String insertFilmWatched = "insert into SAVED_FILM values ( '"+filmId+"', '"+username+"')";
 	        try {
 	        	stm = cnn.createStatement();
 				isUpdated = stm.executeUpdate(insertFilmWatched);
-				stm.close();
+	            stm.close();
+			
 			} catch (SQLException ex) {
 				System.out.println("Error: " + ex.toString());
 			}
@@ -366,6 +392,137 @@ public class DBConnector {
             return isUpdated > 0 ? true : false;
 		}
     	
+    }
+    
+    //*****************************************************************
+    //Comment DAO
+    //*****************************************************************
+    
+    //get number of comment to auto increase id of comment ID
+    public int getNumberOfComment()
+    {
+    	ArrayList<Comment> list = new ArrayList<>();
+    	getInstance();
+    	String[] arr = null;
+    	
+        try {        
+            stm = cnn.createStatement();
+            String query = "select * from COMMENT";
+            rs = stm.executeQuery(query);
+            
+            while(rs.next())
+            {
+            	list.add(new Comment(rs.getString(1).trim(), rs.getString(2).trim(), rs.getString(3).trim(), rs.getString(4).trim()));
+            }
+            
+            Comment comment = list.get(list.size()-1);
+            arr = comment.getCommentId().split("M");
+            
+            rs.close();
+            stm.close();
+            CloseConnect();
+        } catch (SQLException ex) {
+        	ex.printStackTrace();
+            System.out.println("Error: " + ex.toString());
+        }
+        
+        return Integer.parseInt(arr[1]);
+    }
+    
+    //get comment of film by film ID
+    public ArrayList<Comment> getCommentByFilmId(String filmId)
+    {
+    	ArrayList<Comment> list = new ArrayList<>();
+    	getInstance();
+    	
+        try {        
+            stm = cnn.createStatement();
+            String query = "select * from COMMENT where id_film='"+filmId+"'";
+            rs = stm.executeQuery(query);
+            
+            while(rs.next())
+            {
+            	list.add(new Comment(rs.getString(1).trim(), rs.getString(2).trim(), rs.getString(3).trim(), rs.getString(4).trim()));
+            }
+            rs.close();
+            stm.close();
+            CloseConnect();
+        } catch (SQLException ex) {
+        	ex.printStackTrace();
+            System.out.println("Error: " + ex.toString());
+        }
+        
+        return list;
+    }
+    
+    //update comment of film by comment Id
+    public boolean updateCommentByCommentId(Comment comment)
+    {
+    	int isUpdated = 0;
+    	getInstance();
+    	
+        try {        
+            stm = cnn.createStatement();
+            String update = "update COMMENT set content = '"+comment.getContent()+"' where id_comment = '"+comment.getCommentId()+"'";
+            System.out.println("updateCommentByCommentId: "+update);
+            isUpdated = stm.executeUpdate(update);
+
+            stm.close();
+            CloseConnect();
+        } catch (SQLException ex) {
+        	ex.printStackTrace();
+            System.out.println("Error: " + ex.toString());
+        }
+        
+        return isUpdated > 0 ? true : false;
+    }
+    
+    //delete comment
+    public boolean deleteCommentByCommentId(Comment comment)
+    {
+    	int isUpdated = 0;
+    	getInstance();
+    	
+        try {        
+            stm = cnn.createStatement();
+            String update = "delete COMMENT where id_comment='"+comment.getCommentId()+"'";
+            isUpdated = stm.executeUpdate(update);
+            stm.close();
+            CloseConnect();
+        } catch (SQLException ex) {
+        	ex.printStackTrace();
+            System.out.println("Error: " + ex.toString());
+        }
+        
+        return isUpdated > 0 ? true : false;
+    }
+    
+    //add new comment
+    public boolean addComment(Comment comment)
+    {
+    	int isUpdated = 0;
+    	int positionNewComment = this.getNumberOfComment() + 1;
+    	comment.setCommentId("CM"+positionNewComment);
+    	getInstance();
+        try {        
+            String update = "insert into COMMENT values "
+            		+ "('"+comment.getCommentId()+"', "
+            		+ "'"+comment.getFilmId()+"', "
+    				+ "'"+comment.getUsername()+"', "
+					+ "'"+comment.getContent()+"')";
+            System.out.println(update);
+            stm = (Statement) cnn.createStatement();
+            isUpdated = stm.executeUpdate(update);
+            
+            stm.close();
+            CloseConnect();
+        } catch (SQLException ex) {
+        	ex.printStackTrace();
+            System.out.println("Error: " + ex.toString());
+        }
+        
+        
+        return isUpdated > 0 ? true : false;
     }
     
     //disconnect from server

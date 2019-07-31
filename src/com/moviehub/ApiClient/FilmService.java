@@ -144,15 +144,17 @@ public class FilmService {
 	@Path("UpdateWatchedFilm/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateFilmWatched(FilmWatched filmWatched)
+	public Response updateFilmWatched(String filmWatched)
 	{
+		FilmWatched watched = new Gson().fromJson(filmWatched,FilmWatched.class);
+		
 //		FilmWatched filmWatched = new FilmWatched();
-		System.out.println(filmWatched.getIdFilm());
+		System.out.println(watched.getIdFilm());
 		
 		boolean response= false;
 		//update data when it was read
 		DBConnector db = new DBConnector();
-		boolean isUpdated = db.updateFilmWatched(filmWatched);
+		boolean isUpdated = db.updateFilmWatched(watched);
 		//log some thing in consolse and response to client
 		String s = isUpdated ? "Time progress updated" : "Cannot update Time progress";
 		response = isUpdated ? true : false;
