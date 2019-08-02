@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.moviehub.DAO.DBConnector;
 import com.moviehub.model.Comment;
 
@@ -39,7 +40,7 @@ public class CommentService {
 	}
 	
 	//add new comment
-	@PUT
+	@POST
 	@Path("/AddNewComment")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
@@ -48,11 +49,13 @@ public class CommentService {
 		DBConnector db = new DBConnector();
 		System.out.println("Add New Comment: "+ comment);
 		
-		boolean isAdded = db.addComment(new Gson().fromJson(comment, Comment.class));
-		
+		String isAdded =  db.addComment(new Gson().fromJson(comment, Comment.class));
+		JsonObject cmtId = new JsonObject();
+		cmtId.addProperty("id_comment", isAdded);
+		System.out.println("Response Add New Comment: "+ isAdded);
 		return  Response.
 				status(Response.Status.OK).
-				entity(new Gson().toJson(isAdded)).
+				entity(new Gson().toJson(cmtId)).
 				build();
 	}
 	
@@ -67,24 +70,26 @@ public class CommentService {
 		System.out.println("update Comment: "+comment);
 		
 		boolean isUpdated = db.updateCommentByCommentId(new Gson().fromJson(comment, Comment.class));
-		
+		JsonObject object = new JsonObject();
+		object.addProperty("result", isUpdated);
 		return  Response.
 				status(Response.Status.OK).
-				entity(new Gson().toJson(isUpdated)).
+				entity(new Gson().toJson(object)).
 				build();
 	}
 	
 	//delete comment by comment id
-	@DELETE
+	@POST
 	@Path("/DeleteComment")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
 	public Response deleteComment(String comment)
 	{
 		DBConnector db = new DBConnector();
-		System.out.println("delete Comment");
+		System.out.println("delete Comment: "+comment);
 		
 		boolean isDeleted = db.deleteCommentByCommentId(new Gson().fromJson(comment, Comment.class));
+		
 		
 		return  Response.
 				status(Response.Status.OK).

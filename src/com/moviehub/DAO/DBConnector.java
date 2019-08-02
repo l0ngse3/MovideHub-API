@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +35,7 @@ public class DBConnector {
                 Logger.getLogger(DBConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
             cnn =  DriverManager.getConnection(dbURL);
-            System.out.println("Đã kết nối database\n");
+//            System.out.println("Đã kết nối database\n");
         }
         catch ( SQLException e) {
             System.out.println("Không thể kết nối database\n" + e);
@@ -92,7 +93,7 @@ public class DBConnector {
             		profile.setImage(rs.getString(4).trim());
 				}
             	
-            	System.out.println("Profile: "+profile.toString());
+//            	System.out.println("Profile: "+profile.toString());
                 ds.add(profile);
             }
             rs.close();
@@ -402,6 +403,7 @@ public class DBConnector {
     public int getNumberOfComment()
     {
     	ArrayList<Comment> list = new ArrayList<>();
+    	ArrayList<Integer> listIdCmt = new ArrayList<>();
     	getInstance();
     	String[] arr = null;
     	
@@ -413,20 +415,28 @@ public class DBConnector {
             while(rs.next())
             {
             	list.add(new Comment(rs.getString(1).trim(), rs.getString(2).trim(), rs.getString(3).trim(), rs.getString(4).trim()));
+            	Comment comment = list.get(list.size()-1);
+            	arr = comment.getCommentId().split("M");
+            	listIdCmt.add(Integer.parseInt(arr[1]));
             }
-            
-            Comment comment = list.get(list.size()-1);
-            arr = comment.getCommentId().split("M");
             
             rs.close();
             stm.close();
             CloseConnect();
+            
         } catch (SQLException ex) {
         	ex.printStackTrace();
             System.out.println("Error: " + ex.toString());
         }
         
-        return Integer.parseInt(arr[1]);
+        int maxIndex = 0;
+        if(listIdCmt.isEmpty())
+        {
+        	return maxIndex;
+        }
+        else{
+        	return Collections.max(listIdCmt);
+        }
     }
     
     //get comment of film by film ID
@@ -498,7 +508,7 @@ public class DBConnector {
     }
     
     //add new comment
-    public boolean addComment(Comment comment)
+    public String addComment(Comment comment)
     {
     	int isUpdated = 0;
     	int positionNewComment = this.getNumberOfComment() + 1;
@@ -522,7 +532,7 @@ public class DBConnector {
         }
         
         
-        return isUpdated > 0 ? true : false;
+        return isUpdated > 0 ? comment.getCommentId() : "";
     }
     
     //disconnect from server
